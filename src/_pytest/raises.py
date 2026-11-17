@@ -1196,12 +1196,17 @@ class RaisesGroup(AbstractRaises[BaseExceptionGroup[BaseExcT_co]]):
             reason = (
                 cast(str, self._fail_reason) + f" on the {type(exception).__name__}"
             )
+            matched_contained = False
             if (
                 len(actual_exceptions) == len(self.expected_exceptions) == 1
                 and isinstance(expected := self.expected_exceptions[0], type)
-                # we explicitly break typing here :)
-                and self._check_check(actual_exceptions[0])  # type: ignore[arg-type]
             ):
+                try:
+                    # we explicitly break typing here :)
+                    matched_contained = self._check_check(actual_exceptions[0])  # type: ignore[arg-type]
+                except Exception:
+                    matched_contained = False
+            if matched_contained:
                 self._fail_reason = reason + (
                     f", but did return True for the expected {self._repr_expected(expected)}."
                     f" You might want RaisesGroup(RaisesExc({expected.__name__}, check=<...>))"

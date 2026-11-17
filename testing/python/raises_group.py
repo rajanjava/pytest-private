@@ -435,6 +435,20 @@ def test_check() -> None:
     ):
         raise ExceptionGroup("", (ValueError(),))
 
+    # check function inspecting ExceptionGroup attributes should not crash
+    # when called on a single contained exception
+    def check_eg_attr(eg: ExceptionGroup) -> bool:
+        return len(eg.exceptions) > 1
+
+    check_eg_attr_repr = repr_callable(check_eg_attr)
+    with (
+        fails_raises_group(
+            f"check {check_eg_attr_repr} did not return True on the ExceptionGroup"
+        ),
+        RaisesGroup(ValueError, check=check_eg_attr),
+    ):
+        raise ExceptionGroup("", (ValueError(),))
+
 
 def test_unwrapped_match_check() -> None:
     def my_check(e: object) -> bool:  # pragma: no cover
