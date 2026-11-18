@@ -33,6 +33,11 @@ Added in `testing/python/raises_group.py`:
 Prior to the fix:
 `AttributeError: 'ValueError' object has no attribute 'exceptions'`
 
+## Solution Approach
+1. **Understand `RaisesGroup` Single-Exception Probing:** When `pytest.RaisesGroup(..., check=...)` evaluates a candidate exception, it may probe a single non-group exception or sub-exception. Passing a non-`BaseExceptionGroup` directly to a user `check` callable expecting `.exceptions` raised an unexpected `AttributeError`.
+2. **Guard Check Invocation Type:** Updated `src/_pytest/raises.py` so the group-level `check` callable is only invoked on actual `BaseExceptionGroup` instances (or matched sub-exception structure) instead of crashing with `AttributeError` during non-matching probes.
+3. **TDD & Regression Safety:** Added `test_unwrapped_match_check` in `testing/python/raises_group.py` confirming clean match failure reporting instead of `AttributeError`.
+
 ## 4. Solution & Code Changes
 In `src/_pytest/raises.py`:
 - Wrapped the speculative check on `actual_exceptions[0]` in a `try ... except Exception:` block.
